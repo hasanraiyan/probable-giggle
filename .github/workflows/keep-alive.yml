@@ -1,20 +1,18 @@
 name: Keep Render Servers Alive
-
 on:
   schedule:
     - cron: "*/7 * * * *"   # run every 7 minutes
   workflow_dispatch:
-
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Add random delay (0–120s)
         run: sleep $((RANDOM % 120))
-
       - name: Ping servers
         run: |
-          for url in https://server-kma3.onrender.com/ https://SERVER2_URL; do
+          # Add your server URLs here, separated by spaces
+          for url in https://server-kma3.onrender.com/ ; do
             echo "Pinging $url..."
             if curl -s --max-time 10 $url > /dev/null; then
               echo "✅ $url is UP"
