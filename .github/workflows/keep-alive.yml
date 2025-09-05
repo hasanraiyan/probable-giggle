@@ -1,79 +1,72 @@
-# .github/workflows/render-pinger.yml
-
 name: Keep Render Servers Alive
 
 on:
   schedule:
-    # Runs every 7 minutes to keep the free-tier services from spinning down.
+    # Runs every 7 minutes to keep the free-tier services alive
     - cron: "*/7 * * * *"
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     strategy:
-      # This ensures that if one server ping fails, the workflow will still
-      # continue to check the other servers in the list.
       fail-fast: false
       
     steps:
       - name: Add a random delay to avoid simultaneous pings
-        run: sleep $((RANDOM % 120)) # Waits for a random time up to 120 seconds
+        run: sleep $((RANDOM % 120)) # Random wait up to 2 minutes
 
       - name: Ping each server
         env:
-          # The SERVER_URLS secret must contain a space-separated list of your server URLs.
           SERVER_URLS: ${{ secrets.SERVER_URLS }}
-          # The SERVER_NAMES secret must contain a corresponding space-separated list of friendly names.
           SERVER_NAMES: ${{ secrets.SERVER_NAMES }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
-          # Read the space-separated strings from secrets into shell arrays.
           read -ra urls <<< "$SERVER_URLS"
           read -ra names <<< "$SERVER_NAMES"
 
-          # Loop through the servers using an index to keep URLs and names associated.
           for i in "${!urls[@]}"; do
             url="${urls[$i]}"
-            name="${names[$i]}" # Get the corresponding friendly name.
+            name="${names[$i]}"
 
             echo "Pinging $name ($url)..."
-            
-            # Initial check for the server status.
-            if curl -s --max-time 10 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5.0 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" "$url" > /dev/null; then
+
+            if curl -s --max-time 10 -A "Mozilla/5.0" "$url" > /dev/null; then
               echo "✅ $name is UP"
+
+              # Send a heartbeat message to Telegram every 7 minutes
+              message="💓 Heartbeat: '$name' is UP!"
+              curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+                -d chat_id="$CHAT_ID" \
+                -d text="$message"
+
             else
               echo "❌ $name is DOWN. Starting retry mechanism..."
-              
               is_server_up=false
-              # Retry loop: Tries up to 3 times if the server is down.
+
               for attempt in {1..3}; do
                 echo "Retry attempt $attempt/3 in 5 minutes..."
-                sleep 300 # Wait for 5 minutes (300 seconds) before the next attempt.
-                
+                sleep 300
+
                 echo "Pinging $name ($url) again..."
-                if curl -s --max-time 10 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5.0 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36" "$url" > /dev/null; then
+                if curl -s --max-time 10 -A "Mozilla/5.0" "$url" > /dev/null; then
                   echo "✅ $name is back UP!"
                   is_server_up=true
-                  
-                  # Send a notification that the server has recovered.
                   message="✅ Your website '$name' is back online!"
-                  curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
-                    -d chat_id="${{ secrets.CHAT_ID }}" \
+                  curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+                    -d chat_id="$CHAT_ID" \
                     -d text="$message"
-                  
-                  break # Exit the retry loop if the server is back online.
+                  break
                 else
                   echo "❌ $name is still DOWN."
                 fi
               done
 
-              # If the server is still down after all retries, send the "down" notification.
               if [ "$is_server_up" = false ]; then
                 echo "Server $name did not recover. Sending notification."
                 message="⚠️ Your website '$name' is not live. Something went wrong."
-                
-                # Send the custom notification to Telegram.
-                curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage" \
-                  -d chat_id="${{ secrets.CHAT_ID }}" \
+                curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+                  -d chat_id="$CHAT_ID" \
                   -d text="$message"
               fi
             fi
