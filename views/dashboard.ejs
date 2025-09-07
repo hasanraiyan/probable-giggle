@@ -1,111 +1,343 @@
 <%- include('partials/header', { title: 'Uptime Monitor' }) %>
 
-<div class="space-y-8">
+  <div class="space-y-8">
 
-  <!-- Add Site Card -->
-  <div class="bg-white p-6 rounded-xl border border-slate-200">
-    <h2 class="text-xl font-semibold text-slate-800 mb-4">Add a New Site</h2>
-    <form action="/add" method="POST" class="flex flex-col sm:flex-row items-stretch gap-3">
-      <input
-        type="url"
-        name="url"
-        placeholder="e.g., https://google.com"
-        class="flex-grow p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-        required
-      >
-      <button
-        type="submit"
-        class="bg-slate-900 hover:bg-slate-700 text-white font-bold py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900"
-      >
-        Add & Monitor
-      </button>
-    </form>
-  </div>
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="stats-overview">
+      <div class="glass-effect p-6 rounded-xl border border-white/20 shadow-lg animate-slide-up">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-600">Total Sites</p>
+            <p class="text-2xl font-bold text-slate-900" id="total-sites">0</p>
+          </div>
+          <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-globe text-primary-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      <div class="glass-effect p-6 rounded-xl border border-white/20 shadow-lg animate-slide-up"
+        style="animation-delay: 0.1s">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-600">Sites Up</p>
+            <p class="text-2xl font-bold text-green-600" id="sites-up">0</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      <div class="glass-effect p-6 rounded-xl border border-white/20 shadow-lg animate-slide-up"
+        style="animation-delay: 0.2s">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-600">Sites Down</p>
+            <p class="text-2xl font-bold text-red-600" id="sites-down">0</p>
+          </div>
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      <div class="glass-effect p-6 rounded-xl border border-white/20 shadow-lg animate-slide-up"
+        style="animation-delay: 0.3s">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-600">Avg Response</p>
+            <p class="text-2xl font-bold text-slate-900" id="avg-response">0ms</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-tachometer-alt text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Monitored Sites Card -->
-  <div class="bg-white p-6 rounded-xl border border-slate-200">
-    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
-      <h2 class="text-xl font-semibold text-slate-800">Monitored Sites</h2>
-      <form action="/check-all" method="POST">
-        <button
-          type="submit"
-          class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-        >
-          Check All Now
+    <!-- Add Site Card -->
+    <div class="glass-effect p-6 rounded-xl border border-white/20 shadow-lg">
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+          <i class="fas fa-plus text-primary-600"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-slate-800">Add a New Site</h2>
+      </div>
+      <form action="/add" method="POST" class="flex flex-col sm:flex-row items-stretch gap-3" id="add-site-form">
+        <div class="flex-grow relative">
+          <input type="url" name="url" placeholder="e.g., https://google.com"
+            class="w-full p-3 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white/50"
+            required>
+          <i class="fas fa-link absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+        </div>
+        <button type="submit"
+          class="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-3 px-6 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+          <i class="fas fa-plus mr-2"></i>Add & Monitor
         </button>
       </form>
     </div>
 
-    <!-- Sites Table -->
-    <div class="overflow-x-auto border border-slate-200 rounded-lg">
-      <table class="min-w-full bg-white" id="sites-table">
-        <thead class="bg-slate-50">
-          <tr>
-            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">URL</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Status</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Uptime (24h)</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Uptime (7d)</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Response</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Last Checked</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Details</th>
-            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-200">
-          <% if (sites.length > 0) { %>
-            <% sites.forEach(site => { %>
-              <tr class="hover:bg-slate-50/50 transition-colors">
-                <td class="py-3 px-4 font-medium text-slate-900">
-                  <a href="<%= site.url %>" target="_blank" rel="noopener noreferrer" class="hover:underline"><%= site.url %></a>
-                </td>
-                <td class="py-3 px-4">
+    <!-- Monitored Sites Card -->
+    <div class="glass-effect p-6 rounded-xl border border-white/20 shadow-lg">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-heartbeat text-green-600"></i>
+          </div>
+          <h2 class="text-xl font-semibold text-slate-800">Monitored Sites</h2>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button id="refresh-btn"
+            class="bg-white/50 hover:bg-white/80 text-slate-700 font-semibold py-2 px-4 rounded-lg transition-all text-sm border border-white/30 hover:border-white/50">
+            <i class="fas fa-sync-alt mr-2"></i>Refresh
+          </button>
+          <form action="/check-all" method="POST">
+            <button type="submit"
+              class="bg-primary-100 hover:bg-primary-200 text-primary-700 font-semibold py-2 px-4 rounded-lg transition-all text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+              <i class="fas fa-play mr-2"></i>Check All Now
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Sites Grid/Table Toggle -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-2">
+          <span class="text-sm text-slate-600">View:</span>
+          <button id="grid-view-btn"
+            class="px-3 py-1 text-xs font-medium bg-primary-100 text-primary-700 rounded-md transition-colors">
+            <i class="fas fa-th-large mr-1"></i>Grid
+          </button>
+          <button id="table-view-btn"
+            class="px-3 py-1 text-xs font-medium bg-white/50 text-slate-600 rounded-md transition-colors">
+            <i class="fas fa-table mr-1"></i>Table
+          </button>
+        </div>
+        <div class="text-sm text-slate-500">
+          Last updated: <span id="last-updated">Just now</span>
+        </div>
+      </div>
+
+      <!-- Sites Grid View -->
+      <div id="sites-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% if (sites.length> 0) { %>
+          <% sites.forEach(site=> { %>
+            <div
+              class="bg-white/60 backdrop-blur-sm p-6 rounded-xl border border-white/30 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-semibold text-slate-900 truncate" title="<%= site.url %>">
+                    <a href="<%= site.url %>" target="_blank" rel="noopener noreferrer"
+                      class="hover:text-primary-600 transition-colors">
+                      <i class="fas fa-external-link-alt text-xs mr-2"></i>
+                      <%= site.url.replace(/^https?:\/\//, '' ) %>
+                    </a>
+                  </h3>
+                </div>
+                <div class="ml-3">
                   <% if (site.is_paused) { %>
-                    <span class="bg-yellow-500/10 text-yellow-700 text-xs font-semibold px-2.5 py-1 rounded-full">PAUSED</span>
-                  <% } else if (site.status === 'UP') { %>
-                    <span class="bg-green-500/10 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">UP</span>
-                  <% } else if (site.status === 'DOWN') { %>
-                    <span class="bg-red-500/10 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full">DOWN</span>
-                  <% } else { %>
-                    <span class="bg-slate-500/10 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full">N/A</span>
-                  <% } %>
-                </td>
-                <td class="py-3 px-4 text-sm text-slate-600"><%= site.uptime['24h'] %></td>
-                <td class="py-3 px-4 text-sm text-slate-600"><%= site.uptime['7d'] %></td>
-                <td class="py-3 px-4 text-sm text-slate-600"><%= site.response_time !== null ? `${site.response_time} ms` : '—' %></td>
-                <td class="py-3 px-4 text-sm text-slate-600"><%= site.checked_at ? new Date(site.checked_at).toLocaleString() : '—' %></td>
-                <td class="py-3 px-4 text-sm text-slate-500 truncate" style="max-width: 180px;" title="<%= site.details || '' %>"><%= site.details || '' %></td>
-                <td class="py-3 px-4">
-                  <div class="flex items-center space-x-3">
-                    <form action="/check/<%= site.id %>" method="POST" class="m-0">
-                      <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors <%= site.is_paused ? 'opacity-50 cursor-not-allowed' : '' %>" <%= site.is_paused ? 'disabled' : '' %>>Check</button>
-                    </form>
-                    <form action="/site/<%= site.id %>/toggle-pause" method="POST" class="m-0">
-                      <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors">
-                        <%= site.is_paused ? 'Resume' : 'Pause' %>
-                      </button>
-                    </form>
-                    <a href="/site/<%= site.id %>" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors">Logs</a>
-                    <form action="/delete/<%= site.id %>" method="POST" class="m-0 delete-form">
-                      <button type="submit" class="bg-red-500/10 hover:bg-red-500/20 text-red-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors">Delete</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
+                    <span
+                      class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      <i class="fas fa-pause mr-1"></i>PAUSED
+                    </span>
+                    <% } else if (site.status==='UP' ) { %>
+                      <span
+                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-check-circle mr-1"></i>UP
+                      </span>
+                      <% } else if (site.status==='DOWN' ) { %>
+                        <span
+                          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <i class="fas fa-times-circle mr-1"></i>DOWN
+                        </span>
+                        <% } else { %>
+                          <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                            <i class="fas fa-question-circle mr-1"></i>N/A
+                          </span>
+                          <% } %>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="text-center p-3 bg-white/50 rounded-lg">
+                  <p class="text-xs text-slate-500 mb-1">24h Uptime</p>
+                  <p class="font-semibold text-slate-900">
+                    <%= site.uptime['24h'] %>
+                  </p>
+                </div>
+                <div class="text-center p-3 bg-white/50 rounded-lg">
+                  <p class="text-xs text-slate-500 mb-1">7d Uptime</p>
+                  <p class="font-semibold text-slate-900">
+                    <%= site.uptime['7d'] %>
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between text-sm text-slate-600 mb-4">
+                <span><i class="fas fa-clock mr-1"></i>
+                  <%= site.response_time !==null ? `${site.response_time}ms` : '—' %>
+                </span>
+                <span><i class="fas fa-calendar mr-1"></i>
+                  <%= site.checked_at ? new Date(site.checked_at).toLocaleTimeString() : '—' %>
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between space-x-2">
+                <div class="flex space-x-2">
+                  <form action="/check/<%= site.id %>" method="POST" class="m-0">
+                    <button type="submit"
+                      class="bg-primary-100 hover:bg-primary-200 text-primary-700 text-xs font-semibold py-2 px-3 rounded-lg transition-colors <%= site.is_paused ? 'opacity-50 cursor-not-allowed' : '' %>"
+                      <%=site.is_paused ? 'disabled' : '' %>>
+                      <i class="fas fa-sync mr-1"></i>Check
+                    </button>
+                  </form>
+                  <form action="/site/<%= site.id %>/toggle-pause" method="POST" class="m-0">
+                    <button type="submit"
+                      class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs font-semibold py-2 px-3 rounded-lg transition-colors">
+                      <i class="fas fa-<%= site.is_paused ? 'play' : 'pause' %> mr-1"></i>
+                      <%= site.is_paused ? 'Resume' : 'Pause' %>
+                    </button>
+                  </form>
+                </div>
+                <div class="flex space-x-2">
+                  <a href="/site/<%= site.id %>"
+                    class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold py-2 px-3 rounded-lg transition-colors">
+                    <i class="fas fa-chart-line mr-1"></i>Logs
+                  </a>
+                  <form action="/delete/<%= site.id %>" method="POST" class="m-0 delete-form">
+                    <button type="submit"
+                      class="bg-red-100 hover:bg-red-200 text-red-600 text-xs font-semibold py-2 px-3 rounded-lg transition-colors">
+                      <i class="fas fa-trash mr-1"></i>Delete
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
             <% }) %>
-          <% } else { %>
+              <% } else { %>
+                <div class="col-span-full text-center py-12">
+                  <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-globe text-slate-400 text-2xl"></i>
+                  </div>
+                  <p class="font-semibold text-slate-900 mb-2">No sites are being monitored yet</p>
+                  <p class="text-sm text-slate-500">Add your first website above to get started with monitoring!</p>
+                </div>
+                <% } %>
+      </div>
+
+      <!-- Sites Table View -->
+      <div id="sites-table-container"
+        class="hidden overflow-x-auto border border-white/30 rounded-lg bg-white/60 backdrop-blur-sm">
+        <table class="min-w-full" id="sites-table">
+          <thead class="bg-white/80">
             <tr>
-              <td colspan="8" class="py-8 px-4 text-center text-slate-500">
-                <p class="font-semibold">No sites are being monitored yet.</p>
-                <p class="text-sm">Add one above to get started!</p>
-              </td>
+              <th class="py-3 px-4 text-left text-sm font-medium text-slate-700">URL</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-slate-700">Status</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-slate-700">Uptime (24h)</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-slate-700">Uptime (7d)</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-slate-700">Response</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-slate-700">Last Checked</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-slate-700">Details</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-slate-700">Actions</th>
             </tr>
-          <% } %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-white/30">
+            <% if (sites.length> 0) { %>
+              <% sites.forEach(site=> { %>
+                <tr class="hover:bg-white/50 transition-colors">
+                  <td class="py-3 px-4 font-medium text-slate-900">
+                    <a href="<%= site.url %>" target="_blank" rel="noopener noreferrer"
+                      class="hover:text-primary-600 transition-colors">
+                      <i class="fas fa-external-link-alt text-xs mr-2"></i>
+                      <%= site.url %>
+                    </a>
+                  </td>
+                  <td class="py-3 px-4">
+                    <% if (site.is_paused) { %>
+                      <span
+                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <i class="fas fa-pause mr-1"></i>PAUSED
+                      </span>
+                      <% } else if (site.status==='UP' ) { %>
+                        <span
+                          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <i class="fas fa-check-circle mr-1"></i>UP
+                        </span>
+                        <% } else if (site.status==='DOWN' ) { %>
+                          <span
+                            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <i class="fas fa-times-circle mr-1"></i>DOWN
+                          </span>
+                          <% } else { %>
+                            <span
+                              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                              <i class="fas fa-question-circle mr-1"></i>N/A
+                            </span>
+                            <% } %>
+                  </td>
+                  <td class="py-3 px-4 text-sm text-slate-600">
+                    <%= site.uptime['24h'] %>
+                  </td>
+                  <td class="py-3 px-4 text-sm text-slate-600">
+                    <%= site.uptime['7d'] %>
+                  </td>
+                  <td class="py-3 px-4 text-sm text-slate-600">
+                    <%= site.response_time !==null ? `${site.response_time} ms` : '—' %>
+                  </td>
+                  <td class="py-3 px-4 text-sm text-slate-600">
+                    <%= site.checked_at ? new Date(site.checked_at).toLocaleString() : '—' %>
+                  </td>
+                  <td class="py-3 px-4 text-sm text-slate-500 truncate" style="max-width: 180px;"
+                    title="<%= site.details || '' %>">
+                    <%= site.details || '' %>
+                  </td>
+                  <td class="py-3 px-4">
+                    <div class="flex items-center space-x-2">
+                      <form action="/check/<%= site.id %>" method="POST" class="m-0">
+                        <button type="submit"
+                          class="bg-primary-100 hover:bg-primary-200 text-primary-700 text-xs font-semibold py-1 px-3 rounded-md transition-colors <%= site.is_paused ? 'opacity-50 cursor-not-allowed' : '' %>"
+                          <%=site.is_paused ? 'disabled' : '' %>>
+                          <i class="fas fa-sync mr-1"></i>Check
+                        </button>
+                      </form>
+                      <form action="/site/<%= site.id %>/toggle-pause" method="POST" class="m-0">
+                        <button type="submit"
+                          class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-xs font-semibold py-1 px-3 rounded-md transition-colors">
+                          <i class="fas fa-<%= site.is_paused ? 'play' : 'pause' %> mr-1"></i>
+                          <%= site.is_paused ? 'Resume' : 'Pause' %>
+                        </button>
+                      </form>
+                      <a href="/site/<%= site.id %>"
+                        class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors">
+                        <i class="fas fa-chart-line mr-1"></i>Logs
+                      </a>
+                      <form action="/delete/<%= site.id %>" method="POST" class="m-0 delete-form">
+                        <button type="submit"
+                          class="bg-red-100 hover:bg-red-200 text-red-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors">
+                          <i class="fas fa-trash mr-1"></i>Delete
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="8" class="py-12 px-4 text-center text-slate-500">
+                        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <i class="fas fa-globe text-slate-400 text-2xl"></i>
+                        </div>
+                        <p class="font-semibold text-slate-900 mb-2">No sites are being monitored yet</p>
+                        <p class="text-sm text-slate-500">Add your first website above to get started with monitoring!
+                        </p>
+                      </td>
+                    </tr>
+                    <% } %>
+          </tbody>
+        </table>
+      </div>
     </div>
+
   </div>
 
-</div>
-
-<script src="/js/dashboard.js"></script>
-<%- include('partials/footer') %>
+  <script src="/js/dashboard.js"></script>
+  <%- include('partials/footer') %>

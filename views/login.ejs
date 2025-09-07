@@ -1,50 +1,111 @@
 <%- include('partials/header', { title: 'Login' }) %>
 
 <div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
-  <div class="w-full max-w-md bg-white p-8 rounded-xl border border-slate-200">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6 text-center">Login to Your Account</h2>
+  <div class="w-full max-w-md glass-effect p-8 rounded-xl border border-white/20 shadow-xl animate-slide-up">
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-heartbeat text-white text-2xl"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-800 mb-2">Welcome Back</h2>
+      <p class="text-slate-600">Sign in to your monitoring dashboard</p>
+    </div>
 
     <% if (typeof error !== 'undefined' && error) { %>
-      <div class="bg-red-500/10 border border-red-500/20 text-red-700 px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
-        <span class="block sm:inline"><%= error %></span>
+      <div class="bg-red-500/10 border border-red-500/20 text-red-700 px-4 py-3 rounded-lg relative mb-6 text-sm animate-slide-up" role="alert">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-exclamation-circle"></i>
+          <span><%= error %></span>
+        </div>
       </div>
     <% } %>
 
-    <form action="/login" method="POST" class="space-y-5">
+    <form action="/login" method="POST" class="space-y-6" id="login-form">
       <div>
-        <label for="username" class="block text-sm font-medium text-slate-700 mb-1">Username</label>
-        <input
-          type="text"
-          name="username"
-          id="username"
-          class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-          required
-        >
+        <label for="username" class="block text-sm font-medium text-slate-700 mb-2">Username</label>
+        <div class="relative">
+          <input
+            type="text"
+            name="username"
+            id="username"
+            class="w-full p-3 pl-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white/50"
+            required
+            autocomplete="username"
+          >
+          <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+        </div>
       </div>
       <div>
-        <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-          required
-        >
+        <label for="password" class="block text-sm font-medium text-slate-700 mb-2">Password</label>
+        <div class="relative">
+          <input
+            type="password"
+            name="password"
+            id="password"
+            class="w-full p-3 pl-10 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-white/50"
+            required
+            autocomplete="current-password"
+          >
+          <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+          <button type="button" id="toggle-password" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+            <i class="fas fa-eye" id="password-eye"></i>
+          </button>
+        </div>
       </div>
       <div>
         <button
           type="submit"
-          class="w-full mt-2 bg-slate-900 hover:bg-slate-700 text-white font-bold py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900"
+          class="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-3 px-6 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          id="login-btn"
         >
-          Login
+          <i class="fas fa-sign-in-alt mr-2"></i>Sign In
         </button>
       </div>
     </form>
 
-    <p class="text-center text-sm text-slate-600 mt-6">
-      Don't have an account? <a href="/register" class="font-semibold text-blue-600 hover:underline">Register here</a>
-    </p>
+    <div class="mt-8 text-center">
+      <p class="text-sm text-slate-600">
+        Don't have an account? 
+        <a href="/register" class="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+          Create one here
+        </a>
+      </p>
+    </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Password toggle functionality
+  const togglePassword = document.getElementById('toggle-password');
+  const passwordInput = document.getElementById('password');
+  const passwordEye = document.getElementById('password-eye');
+  
+  togglePassword.addEventListener('click', () => {
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    passwordEye.classList.toggle('fa-eye');
+    passwordEye.classList.toggle('fa-eye-slash');
+  });
+
+  // Form submission enhancement
+  const loginForm = document.getElementById('login-form');
+  const loginBtn = document.getElementById('login-btn');
+  
+  loginForm.addEventListener('submit', () => {
+    const originalText = loginBtn.innerHTML;
+    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing In...';
+    loginBtn.disabled = true;
+    
+    // Re-enable after 5 seconds if form doesn't redirect
+    setTimeout(() => {
+      loginBtn.innerHTML = originalText;
+      loginBtn.disabled = false;
+    }, 5000);
+  });
+
+  // Auto-focus username field
+  document.getElementById('username').focus();
+});
+</script>
 
 <%- include('partials/footer') %>
