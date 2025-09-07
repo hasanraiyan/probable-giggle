@@ -1,0 +1,3 @@
+Database already exists at: /app/db/database.json
+Cron job scheduled to run every 5 minutes.
+Server running at http://localhost:3000
