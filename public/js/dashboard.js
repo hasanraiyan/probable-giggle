@@ -31,11 +31,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     sites.forEach(site => {
-      const statusBadge = site.status === 'UP'
-        ? '<span class="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">UP</span>'
-        : site.status === 'DOWN'
-          ? '<span class="bg-red-100 text-red-800 text-sm font-semibold px-3 py-1 rounded-full">DOWN</span>'
-          : '<span class="bg-gray-100 text-gray-800 text-sm font-semibold px-3 py-1 rounded-full">N/A</span>';
+      let statusBadge;
+      if (site.is_paused) {
+        statusBadge = '<span class="bg-yellow-100 text-yellow-800 text-sm font-semibold px-3 py-1 rounded-full">PAUSED</span>';
+      } else if (site.status === 'UP') {
+        statusBadge = '<span class="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">UP</span>';
+      } else if (site.status === 'DOWN') {
+        statusBadge = '<span class="bg-red-100 text-red-800 text-sm font-semibold px-3 py-1 rounded-full">DOWN</span>';
+      } else {
+        statusBadge = '<span class="bg-gray-100 text-gray-800 text-sm font-semibold px-3 py-1 rounded-full">N/A</span>';
+      }
 
       const responseTime = site.response_time !== null ? `${site.response_time} ms` : 'N/A';
       const checkedAt = site.checked_at ? new Date(site.checked_at).toLocaleString() : 'Never';
@@ -53,7 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <td class="py-4 px-4">
             <div class="flex items-center space-x-2">
               <form action="/check/${site.id}" method="POST" class="m-0">
-                <button type="submit" class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold py-2 px-3 rounded-md transition-colors">Check</button>
+                <button type="submit" class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold py-2 px-3 rounded-md transition-colors ${site.is_paused ? 'opacity-50 cursor-not-allowed' : ''}" ${site.is_paused ? 'disabled' : ''}>Check</button>
+              </form>
+              <form action="/site/${site.id}/toggle-pause" method="POST" class="m-0">
+                <button type="submit" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 text-xs font-bold py-2 px-3 rounded-md transition-colors">
+                  ${site.is_paused ? 'Resume' : 'Pause'}
+                </button>
               </form>
               <a href="/site/${site.id}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-bold py-2 px-3 rounded-md transition-colors">Logs</a>
               <form action="/delete/${site.id}" method="POST" class="m-0 delete-form">
