@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 const dbPath = path.join(__dirname, 'database.json');
 
@@ -44,13 +45,62 @@ const db = {
    * Initializes the database file if it doesn't exist.
    */
   setupDatabase: async () => {
-    const dbExists = await fs.access(dbPath).then(() => true).catch(() => false);
-    if (!dbExists) {
-      await writeDB({ sites: [], logs: [] });
-      console.log('Database file created at:', dbPath);
-    } else {
-      console.log('Database already exists at:', dbPath);
+    try {
+      const db = await readDB();
+      if (!db.users) {
+        db.users = [];
+      }
+      if (!db.sites) {
+        db.sites = [];
+      }
+      if (!db.logs) {
+        db.logs = [];
+      }
+      await writeDB(db);
+      console.log('Database schema verified and ready.');
+    } catch (error) {
+      // If the file doesn't exist, create it with the full schema.
+      if (error.code === 'ENOENT') {
+        await writeDB({ sites: [], logs: [], users: [] });
+        console.log('Database file created at:', dbPath);
+      } else {
+        console.error('Error setting up database:', error);
+      }
     }
+  },
+
+  // --- User Operations ---
+
+  /**
+   * Creates a new user with a hashed password.
+   * @param {string} username - The username.
+   * @param {string} password - The plain-text password.
+   * @returns {Promise<object>} The newly created user object.
+   */
+  createUser: async (username, password) => {
+    const db = await readDB();
+    if (db.users.some(user => user.username === username)) {
+      throw new Error('User already exists.');
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = {
+      id: db.users.length > 0 ? Math.max(...db.users.map(u => u.id)) + 1 : 1,
+      username,
+      password: hashedPassword,
+    };
+    db.users.push(newUser);
+    await writeDB(db);
+    return newUser;
+  },
+
+  /**
+   * Finds a user by their username.
+   * @param {string} username - The username to find.
+   * @returns {Promise<object|undefined>} The user object or undefined if not found.
+   */
+  findUserByUsername: async (username) => {
+    const db = await readDB();
+    return db.users.find(user => user.username === username);
   },
 
   // --- Site Operations ---
@@ -69,10 +119,27 @@ const db = {
       id: db.sites.length > 0 ? Math.max(...db.sites.map(s => s.id)) + 1 : 1,
       url,
       created_at: new Date().toISOString(),
+      is_paused: false,
     };
     db.sites.push(newSite);
     await writeDB(db);
     return newSite;
+  },
+
+  /**
+   * Toggles the paused state of a site.
+   * @param {number} id - The ID of the site to toggle.
+   * @returns {Promise<boolean>} True if the site was found and toggled, false otherwise.
+   */
+  togglePauseSite: async (id) => {
+    const db = await readDB();
+    const site = db.sites.find(site => site.id === id);
+    if (!site) {
+      return false;
+    }
+    site.is_paused = !site.is_paused;
+    await writeDB(db);
+    return true;
   },
 
   /**
@@ -159,6 +226,34 @@ const db = {
       }
     }
     return latestLogs;
+  },
+
+  /**
+   * Calculates uptime percentages for a given site.
+   * @param {number} site_id - The ID of the site.
+   * @returns {Promise<object>} An object with uptime stats for 24h and 7d.
+   */
+  getUptimeStats: async (site_id) => {
+    const db = await readDB();
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+    const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+
+    const siteLogs = db.logs.filter(log => log.site_id === site_id);
+
+    const calcUptime = (logs, since) => {
+      const relevantLogs = logs.filter(log => new Date(log.checked_at) >= since);
+      if (relevantLogs.length === 0) {
+        return 'N/A';
+      }
+      const upLogs = relevantLogs.filter(log => log.status === 'UP').length;
+      return ((upLogs / relevantLogs.length) * 100).toFixed(2) + '%';
+    };
+
+    return {
+      '24h': calcUptime(siteLogs, twentyFourHoursAgo),
+      '7d': calcUptime(siteLogs, sevenDaysAgo),
+    };
   },
 };
 
