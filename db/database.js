@@ -75,9 +75,10 @@ const db = {
    * Creates a new user with a hashed password.
    * @param {string} username - The username.
    * @param {string} password - The plain-text password.
+   * @param {string} telegramChatId - The Telegram chat ID (optional).
    * @returns {Promise<object>} The newly created user object.
    */
-  createUser: async (username, password) => {
+  createUser: async (username, password, telegramChatId = null) => {
     const db = await readDB();
     if (db.users.some(user => user.username === username)) {
       throw new Error('User already exists.');
@@ -87,6 +88,7 @@ const db = {
       id: db.users.length > 0 ? Math.max(...db.users.map(u => u.id)) + 1 : 1,
       username,
       password: hashedPassword,
+      telegram_chat_id: telegramChatId
     };
     db.users.push(newUser);
     await writeDB(db);
@@ -101,6 +103,47 @@ const db = {
   findUserByUsername: async (username) => {
     const db = await readDB();
     return db.users.find(user => user.username === username);
+  },
+
+  /**
+   * Updates a user's Telegram chat ID.
+   * @param {number} userId - The ID of the user.
+   * @param {string} telegramChatId - The Telegram chat ID.
+   * @returns {Promise<object|undefined>} The updated user object or undefined if not found.
+   */
+  updateUserTelegramChatId: async (userId, telegramChatId) => {
+    const db = await readDB();
+    const user = db.users.find(user => user.id === userId);
+    if (!user) {
+      return undefined;
+    }
+    user.telegram_chat_id = telegramChatId;
+    await writeDB(db);
+    return user;
+  },
+
+  /**
+   * Gets a user's Telegram chat ID.
+   * @param {number} userId - The ID of the user.
+   * @returns {Promise<string|undefined>} The Telegram chat ID or undefined if not found or not set.
+   */
+  getUserTelegramChatId: async (userId) => {
+    const db = await readDB();
+    const user = db.users.find(user => user.id === userId);
+    if (!user) {
+      return undefined;
+    }
+    return user.telegram_chat_id || null;
+  },
+
+  /**
+   * Finds a user by their ID.
+   * @param {number} id - The user ID to find.
+   * @returns {Promise<object|undefined>} The user object or undefined if not found.
+   */
+  findUserById: async (id) => {
+    const db = await readDB();
+    return db.users.find(user => user.id === id);
   },
 
   // --- Site Operations ---

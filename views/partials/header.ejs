@@ -84,6 +84,9 @@
             <i class="fas fa-user-circle"></i>
             <span>Welcome, <strong><%= user.username %></strong></span>
           </div>
+          <a href="/profile" class="bg-white/50 hover:bg-white/80 text-slate-700 font-semibold py-2 px-4 rounded-lg transition-all text-sm border border-white/30 hover:border-white/50">
+            <i class="fas fa-user mr-2"></i>Profile
+          </a>
           <form action="/logout" method="POST">
             <button type="submit" class="bg-white/50 hover:bg-white/80 text-slate-700 font-semibold py-2 px-4 rounded-lg transition-all text-sm border border-white/30 hover:border-white/50">
               <i class="fas fa-sign-out-alt mr-2"></i>Logout

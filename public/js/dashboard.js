@@ -138,31 +138,51 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const width = rect.width;
       const height = rect.height;
-      const padding = 20;
+      const padding = 25; // Increased padding to accommodate labels
       const chartWidth = width - padding * 2;
-      const chartHeight = height - padding * 2;
+      const chartHeight = height - padding * 2 - 20; // Reduced chart height to make room for x-axis labels
 
       // Clear canvas
       ctx.clearRect(0, 0, width, height);
 
+      // Filter out data points with null latency
+      const validData = latencyData.filter(d => d.latency !== null);
+      
+      if (validData.length === 0) {
+        // No data to display
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('No latency data available', width / 2, height / 2);
+        return;
+      }
+
       // Find min/max for scaling
-      const latencies = latencyData.map(d => d.latency);
+      const latencies = validData.map(d => d.latency);
       const minLatency = Math.min(...latencies);
       const maxLatency = Math.max(...latencies);
-      const range = maxLatency - minLatency || 1;
+      const latencyRange = maxLatency - minLatency || 1;
+      
+      // Determine the maximum number of points to show on x-axis (limit to 24 points)
+      const maxPoints = 24;
+      let displayData = validData;
+      if (validData.length > maxPoints) {
+        // Take the most recent data points up to the maximum
+        displayData = validData.slice(-maxPoints);
+      }
 
       // Create gradient
-      const gradient = ctx.createLinearGradient(0, padding, 0, height - padding);
+      const gradient = ctx.createLinearGradient(0, padding, 0, height - padding - 20);
       gradient.addColorStop(0, 'rgba(134, 142, 150, 0.3)');
       gradient.addColorStop(1, 'rgba(134, 142, 150, 0.05)');
 
       // Draw filled area
       ctx.beginPath();
-      ctx.moveTo(padding, height - padding);
+      ctx.moveTo(padding, height - padding - 20);
       
-      latencyData.forEach((point, index) => {
-        const x = padding + (index / (latencyData.length - 1)) * chartWidth;
-        const y = padding + (1 - (point.latency - minLatency) / range) * chartHeight;
+      displayData.forEach((point, index) => {
+        const x = padding + (index / (displayData.length - 1)) * chartWidth;
+        const y = padding + (1 - (point.latency - minLatency) / latencyRange) * chartHeight;
         
         if (index === 0) {
           ctx.lineTo(x, y);
@@ -171,16 +191,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       
-      ctx.lineTo(padding + chartWidth, height - padding);
+      ctx.lineTo(padding + chartWidth, height - padding - 20);
       ctx.closePath();
       ctx.fillStyle = gradient;
       ctx.fill();
 
       // Draw line
       ctx.beginPath();
-      latencyData.forEach((point, index) => {
-        const x = padding + (index / (latencyData.length - 1)) * chartWidth;
-        const y = padding + (1 - (point.latency - minLatency) / range) * chartHeight;
+      displayData.forEach((point, index) => {
+        const x = padding + (index / (displayData.length - 1)) * chartWidth;
+        const y = padding + (1 - (point.latency - minLatency) / latencyRange) * chartHeight;
         
         if (index === 0) {
           ctx.moveTo(x, y);
@@ -192,6 +212,29 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.strokeStyle = 'rgba(134, 142, 150, 0.8)';
       ctx.lineWidth = 2;
       ctx.stroke();
+      
+      // Draw x-axis labels
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.font = '10px Arial';
+      ctx.textAlign = 'center';
+      
+      // Show labels only for a limited number of points to avoid clutter
+      const labelInterval = Math.max(1, Math.floor(displayData.length / 6));
+      for (let i = 0; i < displayData.length; i += labelInterval) {
+        const point = displayData[i];
+        const x = padding + (i / (displayData.length - 1)) * chartWidth;
+        
+        // Format time for display
+        const date = new Date(point.time);
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        ctx.fillText(timeStr, x, height - 5);
+      }
+      
+      // Draw y-axis labels
+      ctx.textAlign = 'right';
+      ctx.fillText(`${maxLatency}ms`, padding - 5, padding + 10);
+      ctx.fillText(`${minLatency}ms`, padding - 5, height - padding - 10);
     };
 
     // Fetch latency data from API
@@ -205,13 +248,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Update current latency display
         if (latencyData.length > 0) {
+          // Get the latest point (last in array)
           const latestPoint = latencyData[latencyData.length - 1];
           currentLatencyEl.textContent = `${latestPoint.latency}ms`;
           
-          // Calculate change percentage (compare with 24h ago)
+          // Calculate change percentage (compare with previous point or 1 hour ago)
           if (latencyData.length > 1) {
-            const firstPoint = latencyData[0];
-            const change = ((latestPoint.latency - firstPoint.latency) / firstPoint.latency * 100);
+            const previousPoint = latencyData[latencyData.length - 2];
+            const change = ((latestPoint.latency - previousPoint.latency) / previousPoint.latency * 100);
             const changeText = change > 0 ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`;
             const changeColor = change > 0 ? 'text-red-600' : 'text-green-600';
             

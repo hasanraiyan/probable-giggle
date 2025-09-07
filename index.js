@@ -128,7 +128,6 @@ app.get('/', isAuthenticated, async (req, res) => {
 
 // POST /add -> Add a new site
 app.post('/add', isAuthenticated, async (req, res) => {
-  // ... (rest of the route is the same)
   const { url } = req.body;
   if (!url) { return res.status(400).send('URL is required'); }
   try { new URL(url); } catch (error) { return res.status(400).send('Invalid URL format provided.'); }
@@ -137,7 +136,6 @@ app.post('/add', isAuthenticated, async (req, res) => {
 
 // POST /delete/:id -> Delete a site
 app.post('/delete/:id', isAuthenticated, async (req, res) => {
-  // ... (rest of the route is the same)
   const id = parseInt(req.params.id, 10);
   const deleted = await db.deleteSite(id);
   if (!deleted) { return res.status(404).send('Site not found.'); }
@@ -152,7 +150,6 @@ app.post('/check-all', isAuthenticated, (req, res) => {
 
 // POST /check/:id -> Manually trigger a check for one site
 app.post('/check/:id', isAuthenticated, async (req, res) => {
-  // ... (rest of the route is the same)
   const id = parseInt(req.params.id, 10);
   const site = await db.getSiteById(id);
   if (!site) { return res.status(404).send('Site not found.'); }
@@ -174,7 +171,6 @@ app.post('/site/:id/toggle-pause', isAuthenticated, async (req, res) => {
 
 // GET /site/:id -> Detailed logs for one site
 app.get('/site/:id', isAuthenticated, async (req, res) => {
-  // ... (rest of the route is the same)
   const id = parseInt(req.params.id, 10);
   const site = await db.getSiteById(id);
   if (!site) { return res.status(404).send('Site not found.'); }
@@ -184,7 +180,6 @@ app.get('/site/:id', isAuthenticated, async (req, res) => {
 
 // GET /api/status -> JSON data for dashboard refresh
 app.get('/api/status', isAuthenticated, async (req, res) => {
-  // ... (rest of the route is the same)
   try {
     const sites = await db.getAllSites();
     const latestLogs = await db.getLatestLogs();
@@ -256,6 +251,29 @@ app.get('/api/latency', isAuthenticated, async (req, res) => {
   }
 });
 
+// GET /profile -> Show user profile page
+app.get('/profile', isAuthenticated, async (req, res) => {
+  try {
+    const user = await db.findUserById(req.session.user.id);
+    res.render('profile', { user, error: null, success: null });
+  } catch (error) {
+    res.render('profile', { user: req.session.user, error: 'Error loading profile.', success: null });
+  }
+});
+
+// POST /profile -> Update user profile
+app.post('/profile', isAuthenticated, async (req, res) => {
+  const { telegramChatId } = req.body;
+  try {
+    await db.updateUserTelegramChatId(req.session.user.id, telegramChatId);
+    const user = await db.findUserById(req.session.user.id);
+    res.render('profile', { user, error: null, success: 'Profile updated successfully.' });
+  } catch (error) {
+    const user = await db.findUserById(req.session.user.id);
+    res.render('profile', { user, error: 'Error updating profile.', success: null });
+  }
+});
+
 // --- Background Job ---
 const checkAllSites = async () => {
   console.log('Running scheduled check for all sites...');
@@ -269,10 +287,37 @@ const checkAllSites = async () => {
     }
 
     console.log(`[Cron] Checking ${activeSites.length} active site(s).`);
+    
+    // Get the latest logs before checking sites
+    const latestLogs = await db.getLatestLogs();
+    
     for (const site of activeSites) {
       try {
         const result = await checkWebsite(site.url);
+        
+        // Get the previous log for this site
+        const previousLog = latestLogs[site.id];
+        
+        // Add the new log
         await db.addLog(site.id, result);
+        
+        // Check if status changed and send Telegram notification if needed
+        if (previousLog && previousLog.status !== result.status) {
+          // Get all users (in a real app, you might want to associate sites with specific users)
+          const dbData = await db.readDB();
+          for (const user of dbData.users) {
+            // Check if user has Telegram configured
+            if (user.telegram_chat_id) {
+              try {
+                // Import the Telegram service dynamically to avoid circular dependencies
+                const { sendNotification } = require('./services/telegram');
+                await sendNotification(user.telegram_chat_id, site, previousLog, result);
+              } catch (telegramError) {
+                console.error(`[Telegram] Error sending notification to user ${user.id}:`, telegramError.message);
+              }
+            }
+          }
+        }
       } catch (error) {
         console.error(`[Cron] Error checking or logging for ${site.url}:`, error.message);
       }
