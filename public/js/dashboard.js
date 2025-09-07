@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   let currentView = 'grid';
   let lastUpdateTime = new Date();
+  let latencyChart = null;
 
   // UI Elements
   const sitesGrid = document.getElementById('sites-grid');
@@ -18,6 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const sitesUpEl = document.getElementById('sites-up');
   const sitesDownEl = document.getElementById('sites-down');
   const avgResponseEl = document.getElementById('avg-response');
+
+  // Latency chart elements
+  const latencyChartCanvas = document.getElementById('latency-chart');
+  const currentLatencyEl = document.getElementById('current-latency');
+  const latencyChangeEl = document.getElementById('latency-change');
+  const latencyRefreshBtn = document.getElementById('latency-refresh');
 
   // Toast notification system
   const showToast = (message, type = 'info') => {
@@ -112,6 +119,138 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  // Initialize latency chart
+  const initLatencyChart = () => {
+    if (!latencyChartCanvas) return;
+    
+    const ctx = latencyChartCanvas.getContext('2d');
+    const canvas = latencyChartCanvas;
+    
+    let latencyData = [];
+
+    const drawChart = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      
+      const width = rect.width;
+      const height = rect.height;
+      const padding = 20;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      // Find min/max for scaling
+      const latencies = latencyData.map(d => d.latency);
+      const minLatency = Math.min(...latencies);
+      const maxLatency = Math.max(...latencies);
+      const range = maxLatency - minLatency || 1;
+
+      // Create gradient
+      const gradient = ctx.createLinearGradient(0, padding, 0, height - padding);
+      gradient.addColorStop(0, 'rgba(134, 142, 150, 0.3)');
+      gradient.addColorStop(1, 'rgba(134, 142, 150, 0.05)');
+
+      // Draw filled area
+      ctx.beginPath();
+      ctx.moveTo(padding, height - padding);
+      
+      latencyData.forEach((point, index) => {
+        const x = padding + (index / (latencyData.length - 1)) * chartWidth;
+        const y = padding + (1 - (point.latency - minLatency) / range) * chartHeight;
+        
+        if (index === 0) {
+          ctx.lineTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      
+      ctx.lineTo(padding + chartWidth, height - padding);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // Draw line
+      ctx.beginPath();
+      latencyData.forEach((point, index) => {
+        const x = padding + (index / (latencyData.length - 1)) * chartWidth;
+        const y = padding + (1 - (point.latency - minLatency) / range) * chartHeight;
+        
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      
+      ctx.strokeStyle = 'rgba(134, 142, 150, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    };
+
+    // Fetch latency data from API
+    const fetchLatencyData = async () => {
+      try {
+        const response = await fetch('/api/latency?hours=24');
+        if (!response.ok) throw new Error('Failed to fetch latency data');
+        
+        const data = await response.json();
+        latencyData = data.filter(point => point.latency !== null);
+        
+        // Update current latency display
+        if (latencyData.length > 0) {
+          const latestPoint = latencyData[latencyData.length - 1];
+          currentLatencyEl.textContent = `${latestPoint.latency}ms`;
+          
+          // Calculate change percentage (compare with 24h ago)
+          if (latencyData.length > 1) {
+            const firstPoint = latencyData[0];
+            const change = ((latestPoint.latency - firstPoint.latency) / firstPoint.latency * 100);
+            const changeText = change > 0 ? `+${change.toFixed(0)}%` : `${change.toFixed(0)}%`;
+            const changeColor = change > 0 ? 'text-red-600' : 'text-green-600';
+            
+            latencyChangeEl.textContent = changeText;
+            latencyChangeEl.className = `text-sm font-medium ${changeColor}`;
+          }
+        } else {
+          currentLatencyEl.textContent = '—';
+          latencyChangeEl.textContent = '—';
+          latencyChangeEl.className = 'text-sm font-medium text-slate-500';
+        }
+        
+        drawChart();
+      } catch (error) {
+        console.error('Error fetching latency data:', error);
+        currentLatencyEl.textContent = '—';
+        latencyChangeEl.textContent = '—';
+      }
+    };
+
+    const updateLatencyChart = () => {
+      fetchLatencyData();
+    };
+
+    // Initial fetch and draw
+    fetchLatencyData();
+    
+    // Handle resize
+    const resizeObserver = new ResizeObserver(() => {
+      drawChart();
+    });
+    resizeObserver.observe(canvas);
+
+    return { updateLatencyChart, fetchLatencyData, drawChart };
+  };
+
+  // Initialize chart
+  const chartControls = initLatencyChart();
+
   // Update last updated time
   const updateLastUpdatedTime = () => {
     const now = new Date();
@@ -142,6 +281,12 @@ document.addEventListener('DOMContentLoaded', () => {
       
       updateStats(sites);
       renderSites(sites);
+      
+      // Update latency chart
+      if (chartControls && chartControls.updateLatencyChart) {
+        chartControls.updateLatencyChart();
+      }
+      
       lastUpdateTime = new Date();
       updateLastUpdatedTime();
       
@@ -317,6 +462,14 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshBtn?.addEventListener('click', () => {
     fetchAndUpdateDashboard(true);
     showToast('Dashboard refreshed', 'success');
+  });
+
+  // Latency refresh button
+  latencyRefreshBtn?.addEventListener('click', () => {
+    if (chartControls && chartControls.fetchLatencyData) {
+      chartControls.fetchLatencyData();
+      showToast('Latency chart refreshed', 'success');
+    }
   });
 
   // Add site form enhancement

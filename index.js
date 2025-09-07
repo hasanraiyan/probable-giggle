@@ -198,6 +198,64 @@ app.get('/api/status', isAuthenticated, async (req, res) => {
   }
 });
 
+// GET /api/latency -> JSON data for latency chart
+app.get('/api/latency', isAuthenticated, async (req, res) => {
+  try {
+    const hours = parseInt(req.query.hours) || 24;
+    const sites = await db.getAllSites();
+    const activeSites = sites.filter(site => !site.is_paused);
+    
+    if (activeSites.length === 0) {
+      return res.json([]);
+    }
+    
+    // Get all logs from the last X hours
+    const hoursAgo = new Date(Date.now() - hours * 60 * 60 * 1000);
+    const dbData = await db.readDB();
+    
+    // Filter logs for active sites within time range
+    const relevantLogs = dbData.logs.filter(log => {
+      const logTime = new Date(log.checked_at);
+      const isActiveSite = activeSites.some(site => site.id === log.site_id);
+      const isWithinTimeRange = logTime >= hoursAgo;
+      const hasValidResponseTime = log.response_time !== null && log.status === 'UP';
+      
+      return isActiveSite && isWithinTimeRange && hasValidResponseTime;
+    });
+    
+    // Group logs by hour and calculate average latency
+    const latencyData = [];
+    const now = new Date();
+    
+    for (let i = hours - 1; i >= 0; i--) {
+      const hourStart = new Date(now.getTime() - i * 60 * 60 * 1000);
+      const hourEnd = new Date(hourStart.getTime() + 60 * 60 * 1000);
+      
+      const hourLogs = relevantLogs.filter(log => {
+        const logTime = new Date(log.checked_at);
+        return logTime >= hourStart && logTime < hourEnd;
+      });
+      
+      let avgLatency = null;
+      if (hourLogs.length > 0) {
+        const totalLatency = hourLogs.reduce((sum, log) => sum + log.response_time, 0);
+        avgLatency = Math.round(totalLatency / hourLogs.length);
+      }
+      
+      latencyData.push({
+        time: hourStart.toISOString(),
+        latency: avgLatency,
+        count: hourLogs.length
+      });
+    }
+    
+    res.json(latencyData);
+  } catch (error) {
+    console.error('Error fetching latency data:', error);
+    res.status(500).json({ error: 'Error fetching latency data.' });
+  }
+});
+
 // --- Background Job ---
 const checkAllSites = async () => {
   console.log('Running scheduled check for all sites...');
