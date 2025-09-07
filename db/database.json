@@ -1,0 +1,259 @@
+{
+  "sites": [
+    {
+      "id": 1,
+      "url": "https://google.com",
+      "created_at": "2023-10-27T10:00:00.000Z"
+    }
+  ],
+  "logs": [
+    {
+      "id": 1,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 151,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:01:14.002Z"
+    },
+    {
+      "id": 2,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 74,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:05:00.108Z"
+    },
+    {
+      "id": 3,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 96,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:08:32.865Z"
+    },
+    {
+      "id": 4,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 79,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:09:00.107Z"
+    },
+    {
+      "id": 5,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 77,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:09:30.108Z"
+    },
+    {
+      "id": 6,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 85,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:10:00.124Z"
+    },
+    {
+      "id": 7,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 75,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:10:30.106Z"
+    },
+    {
+      "id": 8,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 72,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:11:00.101Z"
+    },
+    {
+      "id": 9,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 35,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:11:30.076Z"
+    },
+    {
+      "id": 10,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 77,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:12:00.102Z"
+    },
+    {
+      "id": 11,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 75,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:12:30.101Z"
+    },
+    {
+      "id": 12,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 26,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:13:00.052Z"
+    },
+    {
+      "id": 13,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 72,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:13:30.098Z"
+    },
+    {
+      "id": 14,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 28,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:14:00.057Z"
+    },
+    {
+      "id": 15,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 73,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:14:30.102Z"
+    },
+    {
+      "id": 16,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 72,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:15:00.098Z"
+    },
+    {
+      "id": 17,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 78,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:16:27.418Z"
+    },
+    {
+      "id": 18,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 14,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:16:30.029Z"
+    },
+    {
+      "id": 19,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 75,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:17:00.093Z"
+    },
+    {
+      "id": 20,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 31,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:17:30.049Z"
+    },
+    {
+      "id": 21,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 40,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:18:00.082Z"
+    },
+    {
+      "id": 22,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 52,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:18:30.094Z"
+    },
+    {
+      "id": 23,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 29,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:19:00.047Z"
+    },
+    {
+      "id": 24,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 27,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:19:30.048Z"
+    },
+    {
+      "id": 25,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 72,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:20:00.090Z"
+    },
+    {
+      "id": 26,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 31,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:20:30.048Z"
+    },
+    {
+      "id": 27,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 74,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:21:00.093Z"
+    },
+    {
+      "id": 28,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 74,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:21:30.089Z"
+    },
+    {
+      "id": 29,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 72,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:22:00.091Z"
+    },
+    {
+      "id": 30,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 73,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:22:30.088Z"
+    },
+    {
+      "id": 31,
+      "site_id": 1,
+      "status": "UP",
+      "response_time": 71,
+      "details": "Status code: 301",
+      "checked_at": "2025-09-07T09:23:00.085Z"
+    }
+  ]
+}
