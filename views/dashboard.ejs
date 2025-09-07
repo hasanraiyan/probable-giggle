@@ -3,19 +3,19 @@
 <div class="space-y-8">
 
   <!-- Add Site Card -->
-  <div class="bg-white p-6 rounded-xl shadow-lg transition-all hover:shadow-xl">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">Add a New Site</h2>
-    <form action="/add" method="POST" class="flex flex-col sm:flex-row items-stretch gap-2">
+  <div class="bg-white p-6 rounded-xl border border-slate-200">
+    <h2 class="text-xl font-semibold text-slate-800 mb-4">Add a New Site</h2>
+    <form action="/add" method="POST" class="flex flex-col sm:flex-row items-stretch gap-3">
       <input
         type="url"
         name="url"
         placeholder="e.g., https://google.com"
-        class="flex-grow p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+        class="flex-grow p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
         required
       >
       <button
         type="submit"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+        class="bg-slate-900 hover:bg-slate-700 text-white font-bold py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900"
       >
         Add & Monitor
       </button>
@@ -23,13 +23,13 @@
   </div>
 
   <!-- Monitored Sites Card -->
-  <div class="bg-white p-6 rounded-xl shadow-lg">
+  <div class="bg-white p-6 rounded-xl border border-slate-200">
     <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
-      <h2 class="text-2xl font-bold text-gray-800">Monitored Sites</h2>
+      <h2 class="text-xl font-semibold text-slate-800">Monitored Sites</h2>
       <form action="/check-all" method="POST">
         <button
           type="submit"
-          class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-500/50"
+          class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-lg transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
         >
           Check All Now
         </button>
@@ -37,56 +37,56 @@
     </div>
 
     <!-- Sites Table -->
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto border border-slate-200 rounded-lg">
       <table class="min-w-full bg-white" id="sites-table">
-        <thead class="bg-gray-50">
+        <thead class="bg-slate-50">
           <tr>
-            <th class="py-3 px-4 text-left font-semibold text-gray-600 uppercase tracking-wider">URL</th>
-            <th class="py-3 px-4 text-left font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-            <th class="py-3 px-4 text-left font-semibold text-gray-600 uppercase tracking-wider">Uptime (24h)</th>
-            <th class="py-3 px-4 text-left font-semibold text-gray-600 uppercase tracking-wider">Uptime (7d)</th>
-            <th class="py-3 px-4 text-left font-semibold text-gray-600 uppercase tracking-wider">Response</th>
-            <th class="py-3 px-4 text-left font-semibold text-gray-600 uppercase tracking-wider">Last Checked</th>
-            <th class="py-3 px-4 text-left font-semibold text-gray-600 uppercase tracking-wider">Details</th>
-            <th class="py-3 px-4 text-left font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">URL</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Status</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Uptime (24h)</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Uptime (7d)</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Response</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Last Checked</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Details</th>
+            <th class="py-3 px-4 text-left text-sm font-medium text-slate-500">Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-200">
+        <tbody class="divide-y divide-slate-200">
           <% if (sites.length > 0) { %>
             <% sites.forEach(site => { %>
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="py-4 px-4 font-medium text-gray-900">
-                  <a href="<%= site.url %>" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline"><%= site.url %></a>
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="py-3 px-4 font-medium text-slate-900">
+                  <a href="<%= site.url %>" target="_blank" rel="noopener noreferrer" class="hover:underline"><%= site.url %></a>
                 </td>
-                <td class="py-4 px-4">
+                <td class="py-3 px-4">
                   <% if (site.is_paused) { %>
-                    <span class="bg-yellow-100 text-yellow-800 text-sm font-semibold px-3 py-1 rounded-full">PAUSED</span>
+                    <span class="bg-yellow-500/10 text-yellow-700 text-xs font-semibold px-2.5 py-1 rounded-full">PAUSED</span>
                   <% } else if (site.status === 'UP') { %>
-                    <span class="bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">UP</span>
+                    <span class="bg-green-500/10 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">UP</span>
                   <% } else if (site.status === 'DOWN') { %>
-                    <span class="bg-red-100 text-red-800 text-sm font-semibold px-3 py-1 rounded-full">DOWN</span>
+                    <span class="bg-red-500/10 text-red-700 text-xs font-semibold px-2.5 py-1 rounded-full">DOWN</span>
                   <% } else { %>
-                    <span class="bg-gray-100 text-gray-800 text-sm font-semibold px-3 py-1 rounded-full">N/A</span>
+                    <span class="bg-slate-500/10 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full">N/A</span>
                   <% } %>
                 </td>
-                <td class="py-4 px-4 text-gray-700"><%= site.uptime['24h'] %></td>
-                <td class="py-4 px-4 text-gray-700"><%= site.uptime['7d'] %></td>
-                <td class="py-4 px-4 text-gray-700"><%= site.response_time !== null ? `${site.response_time} ms` : 'N/A' %></td>
-                <td class="py-4 px-4 text-gray-700"><%= site.checked_at ? new Date(site.checked_at).toLocaleString() : 'Never' %></td>
-                <td class="py-4 px-4 text-sm text-gray-500 truncate" style="max-width: 200px;" title="<%= site.details || '' %>"><%= site.details || '' %></td>
-                <td class="py-4 px-4">
-                  <div class="flex items-center space-x-2">
+                <td class="py-3 px-4 text-sm text-slate-600"><%= site.uptime['24h'] %></td>
+                <td class="py-3 px-4 text-sm text-slate-600"><%= site.uptime['7d'] %></td>
+                <td class="py-3 px-4 text-sm text-slate-600"><%= site.response_time !== null ? `${site.response_time} ms` : '—' %></td>
+                <td class="py-3 px-4 text-sm text-slate-600"><%= site.checked_at ? new Date(site.checked_at).toLocaleString() : '—' %></td>
+                <td class="py-3 px-4 text-sm text-slate-500 truncate" style="max-width: 180px;" title="<%= site.details || '' %>"><%= site.details || '' %></td>
+                <td class="py-3 px-4">
+                  <div class="flex items-center space-x-3">
                     <form action="/check/<%= site.id %>" method="POST" class="m-0">
-                      <button type="submit" class="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold py-2 px-3 rounded-md transition-colors <%= site.is_paused ? 'opacity-50 cursor-not-allowed' : '' %>" <%= site.is_paused ? 'disabled' : '' %>>Check</button>
+                      <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors <%= site.is_paused ? 'opacity-50 cursor-not-allowed' : '' %>" <%= site.is_paused ? 'disabled' : '' %>>Check</button>
                     </form>
                     <form action="/site/<%= site.id %>/toggle-pause" method="POST" class="m-0">
-                      <button type="submit" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 text-xs font-bold py-2 px-3 rounded-md transition-colors">
+                      <button type="submit" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors">
                         <%= site.is_paused ? 'Resume' : 'Pause' %>
                       </button>
                     </form>
-                    <a href="/site/<%= site.id %>" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-bold py-2 px-3 rounded-md transition-colors">Logs</a>
+                    <a href="/site/<%= site.id %>" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors">Logs</a>
                     <form action="/delete/<%= site.id %>" method="POST" class="m-0 delete-form">
-                      <button type="submit" class="bg-red-100 hover:bg-red-200 text-red-800 text-xs font-bold py-2 px-3 rounded-md transition-colors">Delete</button>
+                      <button type="submit" class="bg-red-500/10 hover:bg-red-500/20 text-red-600 text-xs font-semibold py-1 px-3 rounded-md transition-colors">Delete</button>
                     </form>
                   </div>
                 </td>
@@ -94,9 +94,9 @@
             <% }) %>
           <% } else { %>
             <tr>
-              <td colspan="8" class="py-8 px-4 text-center text-gray-500">
-                <p class="text-lg font-semibold">No sites are being monitored yet.</p>
-                <p>Add one above to get started!</p>
+              <td colspan="8" class="py-8 px-4 text-center text-slate-500">
+                <p class="font-semibold">No sites are being monitored yet.</p>
+                <p class="text-sm">Add one above to get started!</p>
               </td>
             </tr>
           <% } %>
